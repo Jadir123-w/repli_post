@@ -1,0 +1,210 @@
+📋 Esquema y Estructura para Subir un Blog
+🗄️ 1. Modelo de Base de Datos (Sequelize)
+Archivo: 
+server/models/Blog.js
+
+javascript
+const Blog = sequelize.define("Blog", {
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  date: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  imageUrl: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  content: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
+  slug: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
+});
+Campos de la Tabla:
+Campo	Tipo	Requerido	Descripción
+id	INTEGER	Auto	ID único (generado automáticamente)
+title	STRING	✅ Sí	Título del blog
+date
+DATE	✅ Sí	Fecha de publicación
+imageUrl	STRING	✅ Sí	URL de la imagen principal
+content	TEXT	✅ Sí	Contenido en formato Markdown
+slug
+STRING	✅ Sí	URL amigable (generado del título)
+createdAt	DATETIME	Auto	Fecha de creación
+updatedAt	DATETIME	Auto	Fecha de última actualización
+🌐 2. Endpoints de la API
+Archivo: 
+server/routes/blog.js
+
+Crear Blog
+POST /api/blog
+Obtener Todos los Blogs
+GET /api/blog
+Obtener Blog por Slug
+GET /api/blog/:slug
+Actualizar Blog
+PUT /api/blog/:slug
+Verificar Código para Editar
+POST /api/blog/verify-edit
+Eliminar Blog
+DELETE /api/blog/:slug
+📤 3. Estructura de Request para Crear Blog
+Endpoint: POST /api/blog
+Headers:
+json
+{
+  "Content-Type": "application/json"
+}
+Body (JSON):
+json
+{
+  "title": "Mi Primer Blog Post",
+  "date": "2024-12-05",
+  "imageUrl": "https://ejemplo.com/imagen.jpg",
+  "content": "# Título del Blog\n\nEste es el contenido en **Markdown**.\n\n## Subtítulo\n\n- Item 1\n- Item 2",
+  "verificationCode": "tu_codigo_secreto_aqui"
+}
+Campos Requeridos:
+Campo	Tipo	Ejemplo	Descripción
+title	string	"Mi Blog"	Título del artículo
+date
+string (YYYY-MM-DD)	"2024-12-05"	Fecha de publicación
+imageUrl	string (URL)	"https://..."	URL de imagen principal
+content	string (Markdown)	"# Título..."	Contenido en Markdown
+verificationCode	string	"codigo123"	Código de verificación del 
+.env
+📥 4. Estructura de Response
+Respuesta Exitosa (201 Created):
+json
+{
+  "id": 1,
+  "title": "Mi Primer Blog Post",
+  "date": "2024-12-05T00:00:00.000Z",
+  "imageUrl": "https://ejemplo.com/imagen.jpg",
+  "content": "# Título del Blog\n\nEste es el contenido...",
+  "slug": "mi-primer-blog-post",
+  "createdAt": "2024-12-05T14:30:00.000Z",
+  "updatedAt": "2024-12-05T14:30:00.000Z"
+}
+Respuesta de Error (403 Forbidden):
+json
+{
+  "message": "Código de verificación inválido."
+}
+Respuesta de Error (500 Internal Server Error):
+json
+{
+  "message": "Error interno del servidor."
+}
+💻 5. Ejemplo de Código para Subir un Blog
+Usando Axios (Frontend):
+javascript
+import axios from 'axios';
+
+const subirBlog = async () => {
+  try {
+    const blogData = {
+      title: "Mi Nuevo Blog",
+      date: "2024-12-05",
+      imageUrl: "https://ejemplo.com/imagen.jpg",
+      content: "# Título\n\nContenido en markdown...",
+      verificationCode: "tu_codigo_secreto"
+    };
+
+    const response = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/blog`,
+      blogData
+    );
+
+    console.log("Blog creado:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error:", error.response?.data?.message);
+    throw error;
+  }
+};
+Usando Fetch (JavaScript Puro):
+javascript
+const subirBlog = async () => {
+  const blogData = {
+    title: "Mi Nuevo Blog",
+    date: "2024-12-05",
+    imageUrl: "https://ejemplo.com/imagen.jpg",
+    content: "# Título\n\nContenido en markdown...",
+    verificationCode: "tu_codigo_secreto"
+  };
+
+  try {
+    const response = await fetch('http://localhost:3001/api/blog', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(blogData)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    const data = await response.json();
+    console.log("Blog creado:", data);
+    return data;
+  } catch (error) {
+    console.error("Error:", error.message);
+    throw error;
+  }
+};
+Usando cURL (Terminal):
+bash
+curl -X POST http://localhost:3001/api/blog \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Mi Nuevo Blog",
+    "date": "2024-12-05",
+    "imageUrl": "https://ejemplo.com/imagen.jpg",
+    "content": "# Título\n\nContenido en markdown...",
+    "verificationCode": "tu_codigo_secreto"
+  }'
+🔄 6. Flujo Completo del Sistema
+┌─────────────────────────────────────────────────────────────┐
+│                    FRONTEND (React)                         │
+├─────────────────────────────────────────────────────────────┤
+│  1. Usuario abre modal "Añadir Blog"                       │
+│  2. Completa formulario (AddBlogPage.js)                    │
+│  3. Ingresa código de verificación                          │
+│  4. Click en "Subir blog"                                   │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+         POST /api/blog (axios)
+         {title, date, imageUrl, content, verificationCode}
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    BACKEND (Express)                        │
+├─────────────────────────────────────────────────────────────┤
+│  1. Recibe request en routes/blog.js                        │
+│  2. Llama a blogController.createBlog()                     │
+│  3. Valida verificationCode vs .env                         │
+│  4. Genera slug del título                                  │
+│  5. Guarda en base de datos (Sequelize)                     │
+│  6. Retorna blog creado                                     │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  BASE DE DATOS (MySQL)                      │
+├─────────────────────────────────────────────────────────────┤
+│  Tabla: Blogs                                               │
+│  - id, title, date, imageUrl, content, slug                 │
+│  - createdAt, updatedAt                                     │
+└─────────────────────────────────────────────────────────────┘

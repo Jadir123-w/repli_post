@@ -1,0 +1,99 @@
+# Gestión de variables de entorno
+python-dotenv==0.21.0
+
+# Lectura de archivos YAML (configuración)
+PyYAML
+
+# Cliente de la API de Google (Docs, Drive, Generative AI)
+google-api-python-client==2.100.0
+google-auth==2.33.0
+google-auth-httplib2==0.1.0
+google-auth-oauthlib==1.0.0
+googleapis-common-protos==1.63.2
+google-api-core==2.19.1
+google-cloud-speech>=2.21.0
+google-cloud-texttospeech>=2.16.0
+google-ai-generativelanguage>=0.6.16
+langchain-google-genai>=2.0.0
+gspread google-auth
+
+# Procesamiento de PDFs y documentos Word
+pdfplumber>=0.10.0
+python-docx
+pypdf==3.15.0
+
+# LangChain y módulos relacionados
+langchain==0.3.21
+langchain-core>=0.3.45,<0.4.0
+langgraph==0.3.22
+langchain-community>=0.3.20
+langchain_google_vertexai
+vertexai
+
+# Manejo de imágenes y PDFs
+pillow>=10.4.0
+
+# Web Scraping y automatización
+beautifulsoup4>=4.12.3
+playwright>=1.50.0
+
+# Manejo de eventos y tiempos
+asyncio>=3.4.3
+pytz>=2023.3
+
+# HTTP y servidores asincrónicos
+httpx>=0.27.0
+uvicorn>=0.27.0
+
+# Manejo de teclado (solo en sistemas compatibles)
+keyboard>=0.13.5
+pywin32; sys_platform == 'win32'
+
+# Manejo de correos
+secure-smtplib
+email-validator
+
+# Utilidades del sistema
+psutil>=5.9.0
+pathlib
+
+# Servicios de mensajería
+twilio>=7.0.0
+
+# Framework web y servidor
+flask>=2.0.0
+flask-cors>=4.0.0
+gunicorn>=20.1.0
+
+# Base de datos y almacenamiento
+pymongo>=4.3.3
+chroma-hnswlib>=0.7.0
+chromadb>=0.4.0
+faiss-cpu>=1.7.0
+
+# Procesamiento de texto y embeddings
+sentence-transformers>=2.2.2
+numpy>=1.20.0  # Requerido para operaciones con embeddings
+
+# Utilidades adicionales
+uuid>=1.30.0
+tqdm>=4.65.0
+tenacity>=8.2.0
+fastapi>=0.95.0
+pydantic>=1.10.7
+requests>=2.28.2
+python-multipart>=0.0.6
+aiofiles>=23.1.0
+typing-extensions==4.12.2
+google-generativeai>=0.3.0
+# Necesario para display(Image(...))
+ipython==8.15.0
+asgiref
+pytesseract>=0.3.10
+pdf2image
+google-cloud-vision>=3.0.0
+
+# Dependencias adicionales para Typst y Google Drive
+google-api-python-client>=2.0.0
+google-auth-httplib2>=0.1.0
+google-auth-oauthlib>=0.5.0

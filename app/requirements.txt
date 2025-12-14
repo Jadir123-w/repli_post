@@ -1,0 +1,83 @@
+# Gestión de variables de entorno
+python-dotenv
+
+# Lectura de archivos YAML (configuración)
+PyYAML
+google-generativeai>=0.3.0
+# Cliente de la API de Google (Docs, Drive, Generative AI)
+google-api-python-client
+google-auth
+google-auth-httplib2
+google-auth-oauthlib
+googleapis-common-protos
+google-api-core
+google-cloud-speech
+google-cloud-texttospeech
+google-ai-generativelanguage
+langchain-google-genai
+gspread
+
+# Procesamiento de PDFs y documentos Word
+pdfplumber
+python-docx
+pypdf
+
+# LangChain y módulos relacionados (sin versiones fijas)
+langchain
+langchain-core
+langgraph
+langchain-community
+langchain_google_vertexai
+vertexai
+
+# Manejo de imágenes y PDFs
+pillow
+
+# Web Scraping y automatización
+beautifulsoup4
+playwright
+
+# Manejo de eventos y tiempos
+asyncio
+pytz
+
+# HTTP y servidores asincrónicos
+httpx
+uvicorn
+
+# Manejo de teclado (solo en sistemas compatibles)
+keyboard
+pywin32; sys_platform == 'win32'
+
+# Framework web y servidor
+asgiref
+flask
+flask-cors
+gunicorn
+
+# Base de datos y almacenamiento
+pymongo
+faiss-cpu
+
+# Utilidades adicionales
+uuid
+tqdm
+tenacity
+fastapi
+pydantic
+requests
+python-multipart
+aiofiles
+psutil
+typing-extensions
+
+# Necesario para display(Image(...))
+ipython
+pytesseract
+pdf2image
+google-cloud-vision
+
+# Dependencias adicionales para Typst y Google Drive
+google-api-python-client>=2.0.0
+google-auth-httplib2>=0.1.0
+google-auth-oauthlib>=0.5.0

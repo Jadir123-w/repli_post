@@ -1,0 +1,23 @@
+.env
+credentials.json
+gmailtoken.json
+calendartoken.json
+prompt.wav
+screenshot.jpg
+main_agent.spec
+/build
+/dist
+.python-version
+deploy-complete.sh
+.vscode
+.venv
+# Ignorar credenciales y claves privadas
+*.json
+app/config/*.json
+app/src/tools/credenciales.json
+credenciales.json
+key.json
+*.p12
+.env
+config/
+secrets/

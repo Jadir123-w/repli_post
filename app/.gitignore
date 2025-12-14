@@ -1,0 +1,43 @@
+# Archivos a no subir en el repositorio
+.env
+.venv
+credentials.json
+gmailtoken.json
+calendartoken.json
+prompt.wav
+screenshot.jpg
+main_agent.spec
+/build
+/dist
+/get-docker
+# Archivos de bases de datos locales
+chroma.sqlite3
+
+# Entornos virtuales
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de configuración de editor
+.vscode/
+.idea/
+
+# Archivos de log
+*.log
+#
+# Archivos temporales
+*.swp
+*.bak
+*.tmp
+*.python-version
+.vscode
+temp_audio
+temp
+temp_pdfs
