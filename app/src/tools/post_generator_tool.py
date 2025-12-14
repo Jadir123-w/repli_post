@@ -685,7 +685,7 @@ Tipo de CTA: {post['cta_type']}
             tool_call_id=tool_call_id or "get_post_history"
         )
 
-    def upload_blog_to_postgresql(
+    def upload_blog_to_api(
         self,
         title: str,
         content: str,
@@ -694,17 +694,12 @@ Tipo de CTA: {post['cta_type']}
         tool_call_id: Optional[str] = None
     ) -> ToolMessage:
         """
-        Sube un blog automáticamente a PostgreSQL mediante la API de Node.js.
-        Valida obligatoriamente la URL de la imagen antes de subir.
-        Cumple con el esquema de BD y endpoints descritos en la documentación:
-        - Tabla Blogs con campos: title, date, imageUrl, content (Markdown), slug (auto-generado)
-        - Requiere verificationCode del .env
-        - Endpoint: POST /api/blog
+        Sube un blog automáticamente al backend mediante la API.
 
         Args:
-            title: Título del blog (máx 200 caracteres)
+            title: Título del blog
             content: Contenido del blog en formato Markdown
-            image_url: URL de la imagen principal del blog (OBLIGATORIO)
+            image_url: URL de la imagen principal del blog
             date: Fecha de publicación (formato YYYY-MM-DD). Si no se proporciona, usa la fecha actual
             tool_call_id: ID de la llamada de herramienta
 
@@ -712,40 +707,11 @@ Tipo de CTA: {post['cta_type']}
             ToolMessage con el resultado de la operación
         """
         try:
-            # Validar longitud del título (según recomendaciones para BD)
-            if len(title) > 200:
-                return ToolMessage(
-                    content="❌ ERROR: Título demasiado largo (máximo 200 caracteres).",
-                    tool_call_id=tool_call_id or "upload_blog_to_postgresql"
-                )
-
-            # Sanitizar contenido para evitar inyecciones (escapar HTML)
-            content = html.escape(content)
-
-            # Validar que la URL de imagen esté presente
-            if not image_url or not image_url.strip():
-                return ToolMessage(
-                    content="❌ ERROR: La URL de la imagen es OBLIGATORIA para publicar el post.\n\nProporciona una URL válida de imagen.",
-                    tool_call_id=tool_call_id or "upload_blog_to_postgresql"
-                )
-
-            # Validar la URL de la imagen
-            print(f"🔍 Validando URL de imagen: {image_url}")
-            validation_result = self.validate_image_url(image_url)
-            
-            if "❌" in validation_result.content:
-                return ToolMessage(
-                    content=f"❌ ERROR: URL de imagen inválida\n\n{validation_result.content}\n\nCorrige la URL y vuelve a intentar.",
-                    tool_call_id=tool_call_id or "upload_blog_to_postgresql"
-                )
-            
-            print("✅ URL de imagen validada correctamente")
-
             # Usar fecha actual si no se proporciona
             if not date:
                 date = datetime.now().strftime("%Y-%m-%d")
 
-            # Preparar los datos del blog para PostgreSQL según documentación
+            # Preparar los datos del blog
             blog_data = {
                 "title": title,
                 "date": date,
@@ -753,18 +719,14 @@ Tipo de CTA: {post['cta_type']}
                 "content": content
             }
             
-            # Agregar verificationCode solo si está configurado (requerido por documentación)
+            # Agregar verificationCode solo si está configurado
             if BLOG_VERIFICATION_CODE:
                 blog_data["verificationCode"] = BLOG_VERIFICATION_CODE
                 print(f"🔐 Usando código de verificación configurado")
-            else:
-                return ToolMessage(
-                    content="❌ ERROR: No hay código de verificación configurado en .env. Es requerido para la API.",
-                    tool_call_id=tool_call_id or "upload_blog_to_postgresql"
-                )
 
-            # Hacer el request POST a la API de Node.js
             print(f"📤 Enviando blog a: {BLOG_API_URL}")
+
+            # Hacer el request POST a la API
             response = requests.post(
                 BLOG_API_URL,
                 json=blog_data,
@@ -772,32 +734,34 @@ Tipo de CTA: {post['cta_type']}
                 timeout=30
             )
 
-            # Procesar la respuesta según documentación
+            # Procesar la respuesta
             if response.status_code == 201:
                 blog_response = response.json()
+                
+                # Capturar la hora actual real
+                hora_publicacion = datetime.now().strftime("%d de %B de %Y a las %H:%M:%S")
+                
                 success_message = f"""
-✅ BLOG SUBIDO EXITOSAMENTE A POSTGRESQL
+✅ BLOG SUBIDO EXITOSAMENTE el {hora_publicacion}
 
 Detalles del blog creado:
 - ID: {blog_response.get('id', 'N/A')}
 - Título: {blog_response.get('title', 'N/A')}
 - Slug: {blog_response.get('slug', 'N/A')}
 - Fecha: {blog_response.get('date', 'N/A')}
-- Imagen: {blog_response.get('imageUrl', 'N/A')}
 - Creado: {blog_response.get('createdAt', 'N/A')}
 
-El blog ha sido publicado correctamente en PostgreSQL.
+¡El post ya está publicado en Replikers y visible en la página!
                 """
-                print("✅ Blog publicado exitosamente")
                 return ToolMessage(
                     content=success_message.strip(),
-                    tool_call_id=tool_call_id or "upload_blog_to_postgresql"
+                    tool_call_id=tool_call_id or "upload_blog_to_api"
                 )
             
             elif response.status_code == 403:
                 return ToolMessage(
-                    content="❌ ERROR 403: Código de verificación inválido o falta autenticación.\n\nVerifica BLOG_VERIFICATION_CODE en tu archivo .env",
-                    tool_call_id=tool_call_id or "upload_blog_to_postgresql"
+                    content="❌ ERROR 403: Código de verificación inválido o falta autenticación. Verifica la configuración del backend.",
+                    tool_call_id=tool_call_id or "upload_blog_to_api"
                 )
             
             else:
@@ -805,25 +769,25 @@ El blog ha sido publicado correctamente en PostgreSQL.
                 error_message = error_data.get('message', 'Error desconocido')
                 return ToolMessage(
                     content=f"❌ ERROR {response.status_code}: {error_message}",
-                    tool_call_id=tool_call_id or "upload_blog_to_postgresql"
+                    tool_call_id=tool_call_id or "upload_blog_to_api"
                 )
 
         except requests.exceptions.ConnectionError:
             return ToolMessage(
-                content=f"❌ ERROR DE CONEXIÓN: No se pudo conectar al servidor Node.js en {BLOG_API_URL}\n\nVerifica que el backend esté corriendo en el puerto correcto.",
-                tool_call_id=tool_call_id or "upload_blog_to_postgresql"
+                content=f"❌ ERROR DE CONEXIÓN: No se pudo conectar al servidor en {BLOG_API_URL}. Verifica que el backend esté corriendo.",
+                tool_call_id=tool_call_id or "upload_blog_to_api"
             )
         
         except requests.exceptions.Timeout:
             return ToolMessage(
-                content="❌ ERROR: La solicitud tardó demasiado tiempo. El servidor no respondió a tiempo.",
-                tool_call_id=tool_call_id or "upload_blog_to_postgresql"
+                content="❌ ERROR: La solicitud tardó demasiado tiempo. El servidor no respondió.",
+                tool_call_id=tool_call_id or "upload_blog_to_api"
             )
         
         except Exception as e:
             return ToolMessage(
-                content=f"❌ ERROR INESPERADO al subir el blog a PostgreSQL: {str(e)}",
-                tool_call_id=tool_call_id or "upload_blog_to_postgresql"
+                content=f"❌ ERROR INESPERADO al subir el blog: {str(e)}",
+                tool_call_id=tool_call_id or "upload_blog_to_api"
             )
 
 
@@ -913,15 +877,15 @@ def get_post_history_tool(tool_call_id: Optional[str] = None) -> ToolMessage:
     """Wrapper para get_post_history"""
     return post_generator.get_post_history(tool_call_id)
 
-def upload_blog_to_postgresql_tool(
+def upload_blog_to_api_tool(
     title: str,
     content: str,
     image_url: str,
     date: Optional[str] = None,
     tool_call_id: Optional[str] = None
 ) -> ToolMessage:
-    """Wrapper para upload_blog_to_postgresql"""
-    return post_generator.upload_blog_to_postgresql(
+    """Wrapper para upload_blog_to_api (para LangChain y agentes)"""
+    return post_generator.upload_blog_to_api(
         title, content, image_url, date, tool_call_id
     )
 
@@ -937,5 +901,5 @@ __all__ = [
     "improve_post_tool",
     "calculate_post_metrics_tool",
     "get_post_history_tool",
-    "upload_blog_to_postgresql_tool",
+    "upload_blog_to_api_tool",
 ]

@@ -1,23 +1,66 @@
-.env
-credentials.json
-gmailtoken.json
-calendartoken.json
-prompt.wav
-screenshot.jpg
-main_agent.spec
-/build
-/dist
-.python-version
-deploy-complete.sh
-.vscode
+# Entornos y dependencias
 .venv
-# Ignorar credenciales y claves privadas
+venv/
+ENV/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.python-version
+
+# Archivos de entorno y secretos
+.env
+.env.local
+.env.*.local
+*.env
+
+# Credenciales y claves sensibles (tu proyecto tiene varios)
 *.json
 app/config/*.json
+app/src/tools/*.json
 app/src/tools/credenciales.json
-credenciales.json
+credentials.json
+gmailtoken.json
 key.json
 *.p12
-.env
+*.key
+*.pem
+*.service_account.json
 config/
 secrets/
+
+# Logs y salidas temporales
+logs/
+*.log
+output/
+tmp/
+temp/
+screenshot.jpg
+prompt.wav
+
+# Build y distribuciones Python
+build/
+dist/
+*.spec
+*.egg-info/
+*.egg
+
+# Editor y OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Scripts y archivos temporales
+deploy-complete.sh
+*.bak
+*.zip
+*.tar.gz
+
+# Docker (si usas en el futuro)
+docker-compose.override.yml
+app/config/.env.local
+app/config/.env.local
