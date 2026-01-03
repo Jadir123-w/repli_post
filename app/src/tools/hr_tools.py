@@ -28,8 +28,6 @@ if str(APP_ROOT) not in sys.path:
 # Importa la lista de países desde la configuración
 from config.settings import PERMITTED_COUNTRIES
 
-# Importamos la herramienta RAG
-from .rag_utils import analyze_cv_with_rag
 
 from utils.config import Config
 
@@ -277,22 +275,13 @@ def process_pdf(pdf_input: Union[str, BytesIO], page_numbers: Optional[List[int]
         logging.error(f"[process_pdf] Error inesperado al procesar el PDF: {str(e)}")
         return f"Error al procesar el PDF: {str(e)}"
 
-from .tools_pago import (
-    generate_payment_link,
-    verify_payment_status,
-    process_payment
-)
 
 from .email_tool import send_email_tool, send_template_email_tool, send_notification_email_tool
 from .Tiempo_tool import get_tiempo
 from .image_gemini_tool import process_image_with_gemini
+from .post_generator_tool import upload_blog_tool
+from .post_generator_tool import edit_blog_in_api
 from .audio_tool import transcribe_audio_tool
-from .post_generator_tool import analyze_content, Post_Publication
-
-# El bloque try/except para voice_tool ya no es necesario.
-# La nueva herramienta de audio se importa directamente.
-VOICE_TOOLS_AVAILABLE = False # Se mantiene por si se usa en otra parte, pero se desactiva la lógica.
-
 # Actualiza la lista de herramientas para exportar
 hr_tools_list = [
     verify_country,
@@ -303,12 +292,6 @@ hr_tools_list = [
     get_tiempo,
     process_image_with_gemini,
     transcribe_audio_tool,
-    analyze_content,
-    Post_Publication,
+    upload_blog_tool,
+    edit_blog_in_api,
 ]
-
-if VOICE_TOOLS_AVAILABLE:
-    # Esta lógica se mantiene por si se reintroducen herramientas de voz,
-    # pero actualmente no se ejecutará al estar VOICE_TOOLS_AVAILABLE = False.
-    pass
-
