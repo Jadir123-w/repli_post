@@ -47,11 +47,13 @@ try:
     # Las importaciones ahora son absolutas desde el paquete 'app'
     from app.src.database.mongo_manager import MongoManager
     from app.src.memory.conversation_memory import ConversationMemory
-    from app.config.settings import SYSTEM_MESSAGE
+    from app.config.settings import SYSTEM_MESSAGE, BLOG_API_URL
     from app.chains.graph_definition import create_hr_graph
     from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
     # ### MODIFICADO: Se remueven las herramientas 'process_pdf' y 'extract_text_from_image' que ya no se usarán directamente ###
     from app.src.tools.voice_tool import speech_to_text_tool, text_to_speech_tool, voice_tool_instance
+
+    logging.info(f"Configuración de Blog: URL={BLOG_API_URL}")
     logging.info("Todos los módulos importados exitosamente")
 except ImportError as e:
     logging.critical(f"Error de importación fatal: {e}")
