@@ -2,6 +2,9 @@ import requests
 import logging
 import os
 import sys
+import re
+import requests
+import logging
 from pathlib import Path
 from langchain_core.tools import tool
 from typing import Optional, Any, Dict
@@ -28,6 +31,14 @@ if str(APP_ROOT) not in sys.path:
 from app.config.settings import BLOG_API_URL
 
 class PostGenerator:
+    def __init__(self):
+        """
+        Este es el constructor. Aquí inicializamos lo que la clase necesita.
+        Sacamos la URL de la configuración que importamos arriba.
+        """
+        self.blog_api_url = BLOG_API_URL
+        logger.info(f"PostGenerator iniciado con URL: {self.blog_api_url}")
+        
     def read_pdf_content(self, pdf_path: str):
         """Lee el contenido de un PDF usando las herramientas existentes."""
         try:
@@ -39,6 +50,16 @@ class PostGenerator:
         except Exception as e:
             logger.error(f"Error leyendo PDF: {e}")
             raise
+    def generate_slug_replikers(self, text: str) -> str:
+        """Replica el comportamiento de replikers.com: Elimina vocales acentuadas."""
+        text = text.lower()
+        # Elimina vocales con tilde (comportamiento observado en tu web)
+        text = re.sub(r'[áéíóúü]', '', text)
+        # Elimina caracteres especiales, mantiene letras, números y espacios
+        text = re.sub(r'[^a-z0-9\s-]', '', text)
+        # Reemplaza espacios por guiones y limpia
+        text = re.sub(r'\s+', '-', text).strip('-')
+        return text
 
     def analyze_content(self, text: str, content_type: str = "pdf"):
         """Analiza el contenido (Placeholder/Mock por ahora)."""
@@ -152,43 +173,47 @@ Este es un post generado basado en el contenido proporcionado.
             logger.error(traceback.format_exc())
             return type('obj', (object,), {'content': error_msg})
         
-    def edit_blog_in_api(self, blog_id: str, title: Optional[str] = None, content: Optional[str] = None, image_url: Optional[str] = None) -> Any:
-        """Edita un blog existente y confirma el título afectado."""
+    def edit_blog_in_api(self, blog_id: str, title: Optional[str] = None, content: Optional[str] = None, image_url: Optional[str] = None) -> str:
+        """
+        Edita un blog existente transformando el blog_id o título 
+        directamente en un slug compatible con Replikers.
+        """
+        # 1. Transformamos el blog_id (o título) en slug inmediatamente
+        # Esto asegura que si envías "Potencia tu PC..." se convierta en "potencia-tu-pc-gua..."
+        slug = self.generate_slug_replikers(blog_id)
+        
+        # 2. Construimos la URL usando el slug limpio
+        edit_url = f"{self.blog_api_url}/{slug}"
+
         print("\n" + "="*80)
-        print(f"📝 EDITANDO PUBLICACIÓN ID: {blog_id}")
+        print(f"📝 EDITANDO PUBLICACIÓN")
+        print(f"🔗 URL GENERADA: {edit_url}")
         print("="*80)
 
-        # Construir payload solo con campos no nulos
+        # 3. Preparamos los datos a enviar
         payload = {k: v for k, v in {
             "title": title,
             "content": content,
             "imageUrl": image_url
         }.items() if v is not None}
 
-        edit_url = f"{BLOG_API_URL}/{blog_id}"
-
         try:
-            logger.info(f"📤 Enviando actualización (PATCH) a {edit_url}")
-            # Usamos PATCH para actualizaciones parciales
+            logger.info(f"📤 Enviando PATCH a {edit_url}")
+            
+            # 4. Ejecutamos la petición
             response = requests.patch(edit_url, json=payload, timeout=30)
             
             if response.status_code in [200, 204]:
-                # Intentamos obtener el título para confirmar al cliente
-                updated_title = title if title else "contenido del post"
-                logger.info(f"✅ Edición exitosa para ID: {blog_id}")
-                
-                return type('obj', (object,), {
-                    'content': f"✅ Se ha editado exitosamente la publicación: '{updated_title}' (ID: {blog_id})."
-                })
+                msg = f"✅ Éxito: La publicación con slug '{slug}' ha sido actualizada."
+                logger.info(msg)
+                return msg
+            elif response.status_code == 404:
+                return f"❌ Error 404: No se encontró el post en la ruta: {edit_url}. Revisa si el título es correcto."
             else:
-                error_msg = f"❌ Error al editar: {response.status_code} - {response.text}"
-                logger.error(error_msg)
-                return type('obj', (object,), {'content': error_msg})
+                return f"❌ Error {response.status_code}: {response.text[:100]}"
                 
         except Exception as e:
-            error_msg = f"❌ Excepción al intentar editar: {str(e)}"
-            logger.error(error_msg)
-            return type('obj', (object,), {'content': error_msg})
+            return f"❌ Excepción técnica: {str(e)}"
 
 # Instancia global para usar en el script de ejemplo
 post_generator = PostGenerator()
@@ -205,15 +230,15 @@ def upload_blog_tool(title: str, content: str, image_url: str) -> str:
         content: El contenido completo del blog post (puede incluir Markdown).
         image_url: La URL de la imagen de portada para el blog.
     """
-    result = post_generator.upload_blog_to_api(title, content, image_url)
-    return result.content
+    return post_generator.upload_blog_to_api(title, content, image_url)
 @tool
 def edit_blog_tool(blog_id: str, title: Optional[str] = None, content: Optional[str] = None, image_url: Optional[str] = None) -> str:
     """
-    Edita un blog post existente en el sitio web.
-    Es obligatorio proporcionar el blog_id obtenido al publicar. 
-    Solo envía los campos que deseas cambiar (title, content o image_url).
+    Edita un blog post existente. 
+    Puedes pasar el ID numérico o el Título completo en 'blog_id'.
+    Retorna confirmación del resultado.
+    Solo envía los campos que deseas cambiar (title, content o image_url)
     Esta herramienta confirmará el título de la publicación editada.
     """
-    result = post_generator.edit_blog_in_api(blog_id, title, content, image_url)
-    return result.content
+    #string resultante
+    return post_generator.edit_blog_in_api(blog_id, title, content, image_url)
