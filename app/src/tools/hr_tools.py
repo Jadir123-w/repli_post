@@ -280,7 +280,7 @@ from .email_tool import send_email_tool, send_template_email_tool, send_notifica
 from .Tiempo_tool import get_tiempo
 from .image_gemini_tool import process_image_with_gemini
 from .post_generator_tool import upload_blog_tool
-from .post_generator_tool import edit_blog_in_api
+from .post_generator_tool import edit_blog_tool
 from .audio_tool import transcribe_audio_tool
 # Actualiza la lista de herramientas para exportar
 hr_tools_list = [
@@ -293,5 +293,5 @@ hr_tools_list = [
     process_image_with_gemini,
     transcribe_audio_tool,
     upload_blog_tool,
-    edit_blog_in_api,
+    edit_blog_tool,
 ]
